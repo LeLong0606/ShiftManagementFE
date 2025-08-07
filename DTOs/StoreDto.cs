@@ -1,5 +1,4 @@
-﻿// ShiftManagement.DTOs/StoreDto.cs
-namespace ShiftManagementFE.DTOs
+﻿namespace ShiftManagementFE.DTOs
 {
     /// <summary>
     /// DTO dùng trả về thông tin cửa hàng.

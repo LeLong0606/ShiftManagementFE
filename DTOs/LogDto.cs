@@ -1,5 +1,4 @@
-﻿// DTOs/LogDto.cs
-namespace ShiftManagementFE.DTOs
+﻿namespace ShiftManagementFE.DTOs
 {
     /// <summary>
     /// DTO dùng trả về thông tin log cho client. Tái sử dụng cho nhiều API.

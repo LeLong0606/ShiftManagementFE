@@ -1,6 +1,4 @@
-﻿// ShiftManagement.DTOs/ShiftScheduleUpdateDto.cs
-// nếu logic update giống create, bạn có thể reuse CreateDto
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ShiftManagementFE.DTOs
 {

@@ -1,5 +1,4 @@
-﻿// ShiftManagement.DTOs/ShiftScheduleDetailDto.cs
-namespace ShiftManagementFE.DTOs
+﻿namespace ShiftManagementFE.DTOs
 {
     public class ShiftScheduleDetailDto
     {

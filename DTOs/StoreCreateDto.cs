@@ -1,12 +1,11 @@
-﻿// ShiftManagement.DTOs/StoreCreateDto.cs
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ShiftManagementFE.DTOs
 {
     public class StoreCreateDto
     {
         [Required, MaxLength(100)]
-        public string StoreName { get; set; } = string.Empty;
+        public string StoreName { get; set; } = default!;
 
         [MaxLength(200)]
         public string? Address { get; set; }

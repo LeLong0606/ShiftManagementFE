@@ -1,5 +1,4 @@
-﻿// ShiftManagement.DTOs/UserRoleDto.cs
-namespace ShiftManagementFE.DTOs
+﻿namespace ShiftManagementFE.DTOs
 {
     /// <summary>
     /// DTO dùng trả về thông tin user-role (mối quan hệ user và role).

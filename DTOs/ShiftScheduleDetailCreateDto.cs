@@ -1,5 +1,4 @@
-﻿// ShiftManagement.DTOs/ShiftScheduleDetailCreateDto.cs
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ShiftManagementFE.DTOs
 {

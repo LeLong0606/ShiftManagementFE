@@ -1,5 +1,4 @@
-﻿// DTOs/HolidayCreateDto.cs
-namespace ShiftManagementFE.DTOs
+﻿namespace ShiftManagementFE.DTOs
 {
     public class HolidayCreateDto
     {
