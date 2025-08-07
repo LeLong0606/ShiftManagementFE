@@ -1,0 +1,135 @@
+﻿@page "/users/add"
+@page "/users/edit/{Id:int}"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+<h3>@(IsEdit ? "Cập nhật người dùng" : "Thêm người dùng")</h3>
+
+@if (!IsEdit)
+{
+    <EditForm Model="CreateDto" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Tên đăng nhập</label>
+            <InputText class="form-control" @bind-Value="CreateDto.Username" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            <InputText class="form-control" type="password" @bind-Value="CreateDto.Password" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Họ tên</label>
+            <InputText class="form-control" @bind-Value="CreateDto.FullName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="CreateDto.Email" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Điện thoại</label>
+            <InputText class="form-control" @bind-Value="CreateDto.PhoneNumber" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Phòng ban</label>
+            <InputNumber class="form-control" @bind-Value="CreateDto.DepartmentID" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Cửa hàng</label>
+            <InputNumber class="form-control" @bind-Value="CreateDto.StoreID" />
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+        <button class="btn btn-secondary" type="button" @onclick="OnCancel">Hủy</button>
+    </EditForm>
+}
+else
+{
+    <EditForm Model="UpdateDto" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Tên đăng nhập</label>
+            <InputText class="form-control" @bind-Value="UpdateDto.Username" disabled="true" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Họ tên</label>
+            <InputText class="form-control" @bind-Value="UpdateDto.FullName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="UpdateDto.Email" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Điện thoại</label>
+            <InputText class="form-control" @bind-Value="UpdateDto.PhoneNumber" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Phòng ban</label>
+            <InputNumber class="form-control" @bind-Value="UpdateDto.DepartmentID" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Cửa hàng</label>
+            <InputNumber class="form-control" @bind-Value="UpdateDto.StoreID" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Trạng thái</label>
+            <InputCheckbox class="form-check-input" @bind-Value="UpdateDto.Status" /> Hoạt động
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+        <button class="btn btn-secondary" type="button" @onclick="OnCancel">Hủy</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    public bool IsEdit => Id != null;
+    public UserCreateDto CreateDto { get; set; } = new();
+    public UserUpdateDto UpdateDto { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            var user = await UserService.GetUserAsync(Id.GetValueOrDefault());
+            if (user != null)
+            {
+                UpdateDto.Username = user.Username;
+                UpdateDto.FullName = user.FullName;
+                UpdateDto.Email = user.Email;
+                UpdateDto.PhoneNumber = user.PhoneNumber;
+                UpdateDto.DepartmentID = user.DepartmentID;
+                UpdateDto.StoreID = user.StoreID;
+                UpdateDto.Status = user.Status;
+            }
+        }
+        else
+        {
+            CreateDto = new UserCreateDto();
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (!IsEdit)
+        {
+            var result = await UserService.CreateUserAsync(CreateDto);
+            if (result.IsSuccess)
+                Navigation.NavigateTo("/users");
+        }
+        else
+        {
+            var result = await UserService.UpdateUserAsync(Id.GetValueOrDefault(), UpdateDto);
+            if (result.IsSuccess)
+                Navigation.NavigateTo("/users");
+        }
+    }
+
+    private void OnCancel()
+    {
+        Navigation.NavigateTo("/users");
+    }
+}
