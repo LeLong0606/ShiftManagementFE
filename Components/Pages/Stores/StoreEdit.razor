@@ -7,6 +7,11 @@
 
 <h3>@(IsEdit ? "Cập nhật cửa hàng" : "Thêm cửa hàng")</h3>
 
+@if (!string.IsNullOrEmpty(errorMsg))
+{
+    <div class="alert alert-danger">@errorMsg</div>
+}
+
 @if (IsEdit)
 {
     <EditForm Model="UpdateDto" OnValidSubmit="OnValidSubmit">
@@ -58,17 +63,29 @@ else
 
     public StoreCreateDto CreateDto { get; set; } = new();
     public StoreUpdateDto UpdateDto { get; set; } = new();
+    string? errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
         if (IsEdit)
         {
-            var d = await StoreService.GetStoreAsync(Id ?? 0);
-            if (d != null)
+            try
             {
-                UpdateDto.StoreName = d.StoreName;
-                UpdateDto.Address = d.Address;
-                UpdateDto.Phone = d.Phone;
+                var d = await StoreService.GetStoreAsync(Id ?? 0);
+                if (d != null)
+                {
+                    UpdateDto.StoreName = d.StoreName;
+                    UpdateDto.Address = d.Address;
+                    UpdateDto.Phone = d.Phone;
+                }
+                else
+                {
+                    errorMsg = "Không tìm thấy cửa hàng!";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMsg = "Lỗi tải dữ liệu: " + ex.Message;
             }
         }
         else
@@ -79,6 +96,7 @@ else
 
     private async Task OnValidSubmit()
     {
+        errorMsg = null;
         ApiResult result;
         if (!IsEdit)
         {
@@ -96,7 +114,7 @@ else
         }
         else
         {
-            // TODO: Hiển thị lỗi nếu cần
+            errorMsg = "Lỗi: " + result.Error;
         }
     }
 

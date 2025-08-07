@@ -7,9 +7,9 @@
 
 <h3>@(IsEdit ? "Cập nhật người dùng" : "Thêm người dùng")</h3>
 
-@if (!string.IsNullOrEmpty(errorMsg))
+@if (!string.IsNullOrEmpty(ErrorMessage))
 {
-    <div class="alert alert-danger">@errorMsg</div>
+    <div class="alert alert-danger">@ErrorMessage</div>
 }
 
 @if (!IsEdit)
@@ -56,10 +56,10 @@ else
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-3">
+        @* <div class="mb-3">
             <label class="form-label">Tên đăng nhập</label>
             <InputText class="form-control" @bind-Value="UpdateDto.Username" disabled="true" />
-        </div>
+        </div> *@
         <div class="mb-3">
             <label class="form-label">Họ tên</label>
             <InputText class="form-control" @bind-Value="UpdateDto.FullName" />
@@ -94,7 +94,7 @@ else
     public bool IsEdit => Id != null;
     public UserCreateDto CreateDto { get; set; } = new();
     public UserUpdateDto UpdateDto { get; set; } = new();
-    string? errorMsg;
+    string? ErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -102,10 +102,10 @@ else
         {
             try
             {
-                var user = await UserService.GetUserAsync(Id.GetValueOrDefault());
+                var user = await UserService.GetUserAsync(Id.Value);
                 if (user != null)
                 {
-                    UpdateDto.Username = user.Username;
+                    //UpdateDto.Username = user.Username;
                     UpdateDto.FullName = user.FullName;
                     UpdateDto.Email = user.Email;
                     UpdateDto.PhoneNumber = user.PhoneNumber;
@@ -115,12 +115,12 @@ else
                 }
                 else
                 {
-                    errorMsg = "Không tìm thấy người dùng!";
+                    ErrorMessage = "Không tìm thấy người dùng!";
                 }
             }
             catch (Exception ex)
             {
-                errorMsg = "Lỗi tải dữ liệu người dùng: " + ex.Message;
+                ErrorMessage = "Lỗi tải dữ liệu người dùng: " + ex.Message;
             }
         }
         else
@@ -131,7 +131,7 @@ else
 
     private async Task OnValidSubmit()
     {
-        errorMsg = null;
+        ErrorMessage = null;
         if (!IsEdit)
         {
             try
@@ -143,31 +143,31 @@ else
                 }
                 else
                 {
-                    errorMsg = "Lỗi: " + result.Error;
+                    ErrorMessage = "Lỗi: " + result.Error;
                 }
             }
             catch (Exception ex)
             {
-                errorMsg = "Lỗi khi tạo người dùng: " + ex.Message;
+                ErrorMessage = "Lỗi khi tạo người dùng: " + ex.Message;
             }
         }
         else
         {
             try
             {
-                var result = await UserService.UpdateUserAsync(Id.GetValueOrDefault(), UpdateDto);
+                var result = await UserService.UpdateUserAsync(Id!.Value, UpdateDto);
                 if (result.IsSuccess)
                 {
                     Navigation.NavigateTo("/users");
                 }
                 else
                 {
-                    errorMsg = "Lỗi: " + result.Error;
+                    ErrorMessage = "Lỗi: " + result.Error;
                 }
             }
             catch (Exception ex)
             {
-                errorMsg = "Lỗi khi cập nhật người dùng: " + ex.Message;
+                ErrorMessage = "Lỗi khi cập nhật người dùng: " + ex.Message;
             }
         }
     }

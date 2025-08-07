@@ -31,7 +31,6 @@
     [Parameter] public int? Id { get; set; }
     public bool IsEdit => Id != null;
 
-    // Dùng đúng DTO
     public DepartmentDto Model { get; set; } = new();
 
     protected override async Task OnInitializedAsync()

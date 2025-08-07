@@ -7,6 +7,11 @@
 
 <h3>@(IsEdit ? "Cập nhật lịch làm việc" : "Thêm lịch làm việc")</h3>
 
+@if (!string.IsNullOrEmpty(errorMsg))
+{
+    <div class="alert alert-danger">@errorMsg</div>
+}
+
 <EditForm Model="Model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -37,6 +42,7 @@
     public bool IsEdit => Id != null;
 
     ShiftScheduleCreateDto Model { get; set; } = new();
+    string? errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,9 +59,25 @@
                     DepartmentID = editItem.DepartmentID,
                     StoreID = editItem.StoreID,
                     Date = editItem.Date,
-                    // Bổ sung Details nếu cần
+                    Details = editItem.Details?.Select(d => new ShiftScheduleDetailCreateDto
+                    {
+                        ShiftCodeID = d.ShiftCodeID,
+                        ShiftType = d.ShiftType,
+                        WorkUnit = d.WorkUnit
+                    }).ToList() ?? new List<ShiftScheduleDetailCreateDto>()
                 };
             }
+            else
+            {
+                errorMsg = "Không tìm thấy lịch làm việc!";
+            }
+        }
+        else
+        {
+            Model = new ShiftScheduleCreateDto
+            {
+                Details = new List<ShiftScheduleDetailCreateDto>()
+            };
         }
     }
 
@@ -77,7 +99,12 @@
                 DepartmentID = Model.DepartmentID,
                 StoreID = Model.StoreID,
                 Date = Model.Date,
-                Details = Model.Details
+                Details = Model.Details?.Select(d => new ShiftScheduleDetailCreateDto
+                {
+                    ShiftCodeID = d.ShiftCodeID,
+                    ShiftType = d.ShiftType,
+                    WorkUnit = d.WorkUnit
+                }).ToList() ?? new List<ShiftScheduleDetailCreateDto>()
             };
             result = await ScheduleService.UpdateScheduleAsync(Id!.Value, updateDto);
         }
@@ -88,7 +115,7 @@
         }
         else
         {
-            // Có thể hiển thị lỗi nếu muốn
+            errorMsg = "Lỗi: " + result.Error;
         }
     }
 

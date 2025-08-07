@@ -95,7 +95,7 @@ else
     private async Task OnDeleteClick(int id)
     {
         ErrorMessage = null;
-        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa user {id}?");
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa người dùng này?");
         if (!confirm) return;
 
         try
@@ -113,7 +113,7 @@ else
         }
         catch (Exception ex)
         {
-            ErrorMessage = "Lỗi khi xóa user: " + ex.Message;
+            ErrorMessage = "Lỗi khi xóa người dùng: " + ex.Message;
         }
     }
 }
