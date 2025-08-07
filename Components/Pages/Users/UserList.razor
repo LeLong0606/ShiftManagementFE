@@ -7,7 +7,7 @@
 
 <h3>Danh sách người dùng</h3>
 
-<button class="btn btn-primary mb-2" @onclick="GoToAdd">Thêm mới</button>
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
 
 @if (users == null)
 {
@@ -46,8 +46,8 @@ else
                     <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
                     <td>@user.UpdatedAt.ToString("yyyy-MM-dd")</td>
                     <td>
-                        <button class="btn btn-sm btn-warning" @onclick="() => GoToEdit(user.UserID)">Sửa</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => Delete(user.UserID)">Xóa</button>
+                        <button class="btn btn-sm btn-warning" @onclick="() => OnEditClick(user.UserID)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(user.UserID)">Xóa</button>
                     </td>
                 </tr>
             }
@@ -60,33 +60,38 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
         users = await UserService.GetUsersAsync();
     }
 
-    void GoToAdd()
+    private void OnAddClick()
     {
         Navigation.NavigateTo("/users/add");
     }
 
-    void GoToEdit(int id)
+    private void OnEditClick(int id)
     {
         Navigation.NavigateTo($"/users/edit/{id}");
     }
 
-    async Task Delete(int id)
+    private async Task OnDeleteClick(int id)
     {
-        if (await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa user {id}?"))
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa user {id}?");
+        if (!confirm) return;
+
+        var result = await UserService.DeleteUserAsync(id);
+        if (result.IsSuccess)
         {
-            var result = await UserService.DeleteUserAsync(id);
-            if (result.IsSuccess)
-            {
-                users = await UserService.GetUsersAsync();
-                await JS.InvokeVoidAsync("alert", "Xóa thành công!");
-            }
-            else
-            {
-                await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
-            }
+            await LoadUsers();
+            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
         }
     }
 }
