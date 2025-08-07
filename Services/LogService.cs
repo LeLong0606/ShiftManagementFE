@@ -24,7 +24,8 @@ namespace ShiftManagementFE.Services
             int page = 1,
             int pageSize = 50)
         {
-            var url = $"/api/Logs?page={page}&pageSize={pageSize}";
+            // Đường dẫn API dạng tương đối, không có dấu "/" đầu nếu đã set BaseAddress
+            var url = $"api/Logs?page={page}&pageSize={pageSize}";
             var parameters = new List<string>();
             if (!string.IsNullOrWhiteSpace(search)) parameters.Add($"search={search}");
             if (userId.HasValue) parameters.Add($"userId={userId.Value}");
@@ -36,12 +37,12 @@ namespace ShiftManagementFE.Services
 
         public async Task<LogDto?> GetLogAsync(int id)
         {
-            return await _http.GetFromJsonAsync<LogDto>($"/api/Logs/{id}");
+            return await _http.GetFromJsonAsync<LogDto>($"api/Logs/{id}");
         }
 
         public async Task<ApiResult<LogDto>> CreateLogAsync(LogCreateDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Logs", dto);
+            var res = await _http.PostAsJsonAsync("api/Logs", dto);
             if (res.IsSuccessStatusCode)
             {
                 var data = await res.Content.ReadFromJsonAsync<LogDto>();
@@ -53,7 +54,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> DeleteLogAsync(int id)
         {
-            var res = await _http.DeleteAsync($"/api/Logs/{id}");
+            var res = await _http.DeleteAsync($"api/Logs/{id}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();

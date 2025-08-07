@@ -17,13 +17,14 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<AttendanceReportDto>?> GetAttendanceReportAsync(int departmentId, string period)
         {
-            var url = $"/api/Attendance/report?departmentId={departmentId}&period={period}";
+            // Đường dẫn API là tương đối, không có dấu "/" đầu
+            var url = $"api/Attendance/report?departmentId={departmentId}&period={period}";
             return await _http.GetFromJsonAsync<List<AttendanceReportDto>>(url);
         }
 
         public async Task<List<MyAttendanceDto>?> GetMyAttendanceAsync(int userId, string period)
         {
-            var url = $"/api/Attendance/my?userId={userId}&period={period}";
+            var url = $"api/Attendance/my?userId={userId}&period={period}";
             return await _http.GetFromJsonAsync<List<MyAttendanceDto>>(url);
         }
     }

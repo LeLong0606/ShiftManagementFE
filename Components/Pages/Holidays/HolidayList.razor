@@ -9,11 +9,16 @@
 
 <button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
 
-@if (holidays == null)
+@if (errorMsg != null)
+{
+    <div class="alert alert-danger">@errorMsg</div>
+}
+
+@if (holidays == null && errorMsg == null)
 {
     <p>Đang tải...</p>
 }
-else
+else if (holidays != null)
 {
     <table class="table table-bordered">
         <thead>
@@ -45,6 +50,7 @@ else
 
 @code {
     List<HolidayDto>? holidays;
+    string? errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,7 +59,16 @@ else
 
     private async Task LoadHolidays()
     {
-        holidays = await HolidayService.GetHolidaysAsync();
+        try
+        {
+            errorMsg = null;
+            holidays = await HolidayService.GetHolidaysAsync();
+        }
+        catch (Exception ex)
+        {
+            holidays = null;
+            errorMsg = "Không thể tải danh sách ngày lễ: " + ex.Message;
+        }
     }
 
     private void OnAddClick()
@@ -71,15 +86,22 @@ else
         var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa ngày lễ {id}?");
         if (!confirm) return;
 
-        var result = await HolidayService.DeleteHolidayAsync(id);
-        if (result.IsSuccess)
+        try
         {
-            await LoadHolidays();
-            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            var result = await HolidayService.DeleteHolidayAsync(id);
+            if (result.IsSuccess)
+            {
+                await LoadHolidays();
+                await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            await JS.InvokeVoidAsync("alert", "Lỗi khi xóa: " + ex.Message);
         }
     }
 }

@@ -17,17 +17,18 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<HolidayDto>?> GetHolidaysAsync()
         {
-            return await _http.GetFromJsonAsync<List<HolidayDto>>("/api/Holidays");
+            // Đường dẫn API là tương đối, không có dấu "/" đầu dòng
+            return await _http.GetFromJsonAsync<List<HolidayDto>>("api/Holidays");
         }
 
         public async Task<HolidayDto?> GetHolidayAsync(int id)
         {
-            return await _http.GetFromJsonAsync<HolidayDto>($"/api/Holidays/{id}");
+            return await _http.GetFromJsonAsync<HolidayDto>($"api/Holidays/{id}");
         }
 
         public async Task<ApiResult<HolidayDto>> CreateHolidayAsync(HolidayCreateDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Holidays", dto);
+            var res = await _http.PostAsJsonAsync("api/Holidays", dto);
             if (res.IsSuccessStatusCode)
             {
                 var data = await res.Content.ReadFromJsonAsync<HolidayDto>();
@@ -39,7 +40,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> UpdateHolidayAsync(int id, HolidayUpdateDto dto)
         {
-            var res = await _http.PutAsJsonAsync($"/api/Holidays/{id}", dto);
+            var res = await _http.PutAsJsonAsync($"api/Holidays/{id}", dto);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -48,7 +49,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> DeleteHolidayAsync(int id)
         {
-            var res = await _http.DeleteAsync($"/api/Holidays/{id}");
+            var res = await _http.DeleteAsync($"api/Holidays/{id}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();

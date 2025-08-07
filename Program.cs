@@ -1,4 +1,4 @@
-using ShiftManagementFE.Components;
+﻿using ShiftManagementFE.Components;
 using ShiftManagementFE.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,21 +7,36 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Register HttpClient for dependency injection
-builder.Services.AddHttpClient();
+// Register HttpClient for dependency injection with BaseAddress
+builder.Services.AddHttpClient("ApiClient", client =>
+{
+    // Thay thế URL này bằng URL backend API của bạn nếu khác
+    client.BaseAddress = new Uri("https://localhost:7222/");
+});
 
-// Register application services for DI
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<DepartmentService>();
-builder.Services.AddScoped<HolidayService>();
-builder.Services.AddScoped<StoreService>();
-builder.Services.AddScoped<RoleService>();
-builder.Services.AddScoped<LogService>();
-builder.Services.AddScoped<ScheduleService>();
-builder.Services.AddScoped<AttendanceService>();
-builder.Services.AddScoped<ExportService>();
-builder.Services.AddScoped<UserRoleService>();
+// Register application services for DI, inject named HttpClient
+builder.Services.AddScoped<UserService>(sp =>
+    new UserService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<AuthService>(sp =>
+    new AuthService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<DepartmentService>(sp =>
+    new DepartmentService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<HolidayService>(sp =>
+    new HolidayService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<StoreService>(sp =>
+    new StoreService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<RoleService>(sp =>
+    new RoleService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<LogService>(sp =>
+    new LogService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<ScheduleService>(sp =>
+    new ScheduleService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<AttendanceService>(sp =>
+    new AttendanceService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<ExportService>(sp =>
+    new ExportService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+builder.Services.AddScoped<UserRoleService>(sp =>
+    new UserRoleService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
 
 var app = builder.Build();
 

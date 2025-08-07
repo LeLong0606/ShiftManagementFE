@@ -17,13 +17,14 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<AttendanceExportDto>?> GetAttendanceExportDataAsync(int departmentId, string period)
         {
-            var url = $"/api/Export/attendance?departmentId={departmentId}&period={period}";
+            // Đường dẫn API là tương đối, không có dấu "/" đầu
+            var url = $"api/Export/attendance?departmentId={departmentId}&period={period}";
             return await _http.GetFromJsonAsync<List<AttendanceExportDto>>(url);
         }
 
         public async Task<byte[]?> ExportAttendanceToExcelAsync(List<AttendanceExportDto> dtoData)
         {
-            var res = await _http.PostAsJsonAsync("/api/Export/attendance/excel", dtoData);
+            var res = await _http.PostAsJsonAsync("api/Export/attendance/excel", dtoData);
             if (res.IsSuccessStatusCode)
                 return await res.Content.ReadAsByteArrayAsync();
             return null;
@@ -31,7 +32,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<byte[]?> ExportAttendanceToPdfAsync(List<AttendanceExportDto> dtoData)
         {
-            var res = await _http.PostAsJsonAsync("/api/Export/attendance/pdf", dtoData);
+            var res = await _http.PostAsJsonAsync("api/Export/attendance/pdf", dtoData);
             if (res.IsSuccessStatusCode)
                 return await res.Content.ReadAsByteArrayAsync();
             return null;

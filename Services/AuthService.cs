@@ -16,7 +16,8 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult<AuthResultDto>> LoginAsync(LoginDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Users/login", dto);
+            // Đường dẫn API là tương đối, không có dấu "/" đầu
+            var res = await _http.PostAsJsonAsync("api/Users/login", dto);
             if (res.IsSuccessStatusCode)
             {
                 var result = await res.Content.ReadFromJsonAsync<AuthResultDto>();
@@ -28,7 +29,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult<int>> RegisterAsync(RegisterDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Users/register", dto);
+            var res = await _http.PostAsJsonAsync("api/Users/register", dto);
             if (res.IsSuccessStatusCode)
             {
                 var userId = await res.Content.ReadFromJsonAsync<int>();
@@ -40,7 +41,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<AuthUserDto?> GetMeAsync(int userId)
         {
-            return await _http.GetFromJsonAsync<AuthUserDto>($"/api/Users/{userId}");
+            return await _http.GetFromJsonAsync<AuthUserDto>($"api/Users/{userId}");
         }
     }
 

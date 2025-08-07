@@ -9,11 +9,16 @@
 
 <button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
 
-@if (departments == null)
+@if (errorMsg != null)
+{
+    <div class="alert alert-danger">@errorMsg</div>
+}
+
+@if (departments == null && errorMsg == null)
 {
     <p>Đang tải...</p>
 }
-else
+else if (departments != null)
 {
     <table class="table table-bordered">
         <thead>
@@ -45,6 +50,7 @@ else
 
 @code {
     List<DepartmentDto>? departments;
+    string? errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,7 +59,16 @@ else
 
     private async Task LoadDepartments()
     {
-        departments = await DepartmentService.GetDepartmentsAsync();
+        try
+        {
+            errorMsg = null;
+            departments = await DepartmentService.GetDepartmentsAsync();
+        }
+        catch (Exception ex)
+        {
+            departments = null;
+            errorMsg = "Không thể tải danh sách phòng ban: " + ex.Message;
+        }
     }
 
     private void OnAddClick()
@@ -71,15 +86,22 @@ else
         var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa phòng ban {id}?");
         if (!confirm) return;
 
-        var result = await DepartmentService.DeleteDepartmentAsync(id);
-        if (result.IsSuccess)
+        try
         {
-            await LoadDepartments();
-            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            var result = await DepartmentService.DeleteDepartmentAsync(id);
+            if (result.IsSuccess)
+            {
+                await LoadDepartments();
+                await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            await JS.InvokeVoidAsync("alert", "Lỗi khi xóa: " + ex.Message);
         }
     }
 }

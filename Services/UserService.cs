@@ -17,7 +17,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<UserDto>?> GetUsersAsync(string? search = null, int page = 1, int pageSize = 50)
         {
-            var url = $"/api/Users?page={page}&pageSize={pageSize}";
+            var url = $"api/Users?page={page}&pageSize={pageSize}";
             if (!string.IsNullOrWhiteSpace(search))
                 url += $"&search={search}";
             return await _http.GetFromJsonAsync<List<UserDto>>(url);
@@ -25,12 +25,12 @@ namespace ShiftManagementFE.Services
 
         public async Task<UserDto?> GetUserAsync(int id)
         {
-            return await _http.GetFromJsonAsync<UserDto>($"/api/Users/{id}");
+            return await _http.GetFromJsonAsync<UserDto>($"api/Users/{id}");
         }
 
         public async Task<ApiResult<int>> CreateUserAsync(UserCreateDto input)
         {
-            var res = await _http.PostAsJsonAsync("/api/Users", input);
+            var res = await _http.PostAsJsonAsync("api/Users", input);
             if (res.IsSuccessStatusCode)
             {
                 var id = await res.Content.ReadFromJsonAsync<int>();
@@ -42,7 +42,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> UpdateUserAsync(int id, UserUpdateDto input)
         {
-            var res = await _http.PutAsJsonAsync($"/api/Users/{id}", input);
+            var res = await _http.PutAsJsonAsync($"api/Users/{id}", input);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -51,7 +51,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> DeleteUserAsync(int id)
         {
-            var res = await _http.DeleteAsync($"/api/Users/{id}");
+            var res = await _http.DeleteAsync($"api/Users/{id}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -60,7 +60,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> ChangePasswordAsync(int id, ChangePasswordDto dto)
         {
-            var res = await _http.PatchAsJsonAsync($"/api/Users/{id}/changepassword", dto);
+            var res = await _http.PatchAsJsonAsync($"api/Users/{id}/changepassword", dto);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -69,7 +69,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> ToggleLockAsync(int id)
         {
-            var res = await _http.PatchAsync($"/api/Users/{id}/lock", null);
+            var res = await _http.PatchAsync($"api/Users/{id}/lock", null);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -78,7 +78,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> AddRoleAsync(int userId, int roleId)
         {
-            var res = await _http.PostAsync($"/api/Users/{userId}/roles?roleId={roleId}", null);
+            var res = await _http.PostAsync($"api/Users/{userId}/roles?roleId={roleId}", null);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -87,7 +87,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> RemoveRoleAsync(int userId, int roleId)
         {
-            var res = await _http.DeleteAsync($"/api/Users/{userId}/roles/{roleId}");
+            var res = await _http.DeleteAsync($"api/Users/{userId}/roles/{roleId}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -96,12 +96,12 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<string>?> GetUserRolesAsync(int userId)
         {
-            return await _http.GetFromJsonAsync<List<string>>($"/api/Users/{userId}/roles");
+            return await _http.GetFromJsonAsync<List<string>>($"api/Users/{userId}/roles");
         }
 
         public async Task<string?> LoginAsync(LoginDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Users/login", dto);
+            var res = await _http.PostAsJsonAsync("api/Users/login", dto);
             if (res.IsSuccessStatusCode)
                 return await res.Content.ReadAsStringAsync();
             return null;

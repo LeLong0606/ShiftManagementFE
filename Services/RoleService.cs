@@ -17,7 +17,8 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<RoleDto>?> GetRolesAsync(string? search = null, int page = 1, int pageSize = 50)
         {
-            var url = $"/api/Roles?page={page}&pageSize={pageSize}";
+            // Sử dụng đường dẫn tương đối, không có dấu "/" ở đầu nếu đã set BaseAddress
+            var url = $"api/Roles?page={page}&pageSize={pageSize}";
             if (!string.IsNullOrWhiteSpace(search))
                 url += $"&search={search}";
             return await _http.GetFromJsonAsync<List<RoleDto>>(url);
@@ -25,12 +26,12 @@ namespace ShiftManagementFE.Services
 
         public async Task<RoleDto?> GetRoleAsync(int id)
         {
-            return await _http.GetFromJsonAsync<RoleDto>($"/api/Roles/{id}");
+            return await _http.GetFromJsonAsync<RoleDto>($"api/Roles/{id}");
         }
 
         public async Task<ApiResult<RoleDto>> CreateRoleAsync(RoleDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Roles", dto);
+            var res = await _http.PostAsJsonAsync("api/Roles", dto);
             if (res.IsSuccessStatusCode)
             {
                 var data = await res.Content.ReadFromJsonAsync<RoleDto>();
@@ -42,7 +43,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> UpdateRoleAsync(int id, RoleDto dto)
         {
-            var res = await _http.PutAsJsonAsync($"/api/Roles/{id}", dto);
+            var res = await _http.PutAsJsonAsync($"api/Roles/{id}", dto);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -51,7 +52,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> DeleteRoleAsync(int id)
         {
-            var res = await _http.DeleteAsync($"/api/Roles/{id}");
+            var res = await _http.DeleteAsync($"api/Roles/{id}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();

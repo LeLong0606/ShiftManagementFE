@@ -23,7 +23,8 @@ namespace ShiftManagementFE.Services
             int page = 1,
             int pageSize = 50)
         {
-            var url = $"/api/Schedules?page={page}&pageSize={pageSize}";
+            // Đường dẫn API dạng tương đối, không có dấu "/" đầu nếu đã set BaseAddress
+            var url = $"api/Schedules?page={page}&pageSize={pageSize}";
             var parameters = new List<string>();
             if (from.HasValue) parameters.Add($"from={from.Value:O}");
             if (to.HasValue) parameters.Add($"to={to.Value:O}");
@@ -34,7 +35,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult<ShiftScheduleDto>> CreateScheduleAsync(ShiftScheduleCreateDto dto, int createdById)
         {
-            var res = await _http.PostAsJsonAsync($"/api/Schedules?createdBy={createdById}", dto);
+            var res = await _http.PostAsJsonAsync($"api/Schedules?createdBy={createdById}", dto);
             if (res.IsSuccessStatusCode)
             {
                 var data = await res.Content.ReadFromJsonAsync<ShiftScheduleDto>();
@@ -46,7 +47,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> UpdateScheduleAsync(int id, ShiftScheduleUpdateDto dto)
         {
-            var res = await _http.PutAsJsonAsync($"/api/Schedules/{id}", dto);
+            var res = await _http.PutAsJsonAsync($"api/Schedules/{id}", dto);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -55,7 +56,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> DeleteScheduleAsync(int id)
         {
-            var res = await _http.DeleteAsync($"/api/Schedules/{id}");
+            var res = await _http.DeleteAsync($"api/Schedules/{id}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();

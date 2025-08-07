@@ -9,11 +9,16 @@
 
 <button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
 
-@if (roles == null)
+@if (errorMsg != null)
+{
+    <div class="alert alert-danger">@errorMsg</div>
+}
+
+@if (roles == null && errorMsg == null)
 {
     <p>Đang tải...</p>
 }
-else
+else if (roles != null)
 {
     <table class="table table-bordered">
         <thead>
@@ -41,6 +46,7 @@ else
 
 @code {
     List<RoleDto>? roles;
+    string? errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,7 +55,16 @@ else
 
     private async Task LoadRoles()
     {
-        roles = await RoleService.GetRolesAsync();
+        try
+        {
+            errorMsg = null;
+            roles = await RoleService.GetRolesAsync();
+        }
+        catch (Exception ex)
+        {
+            roles = null;
+            errorMsg = "Không thể tải danh sách vai trò: " + ex.Message;
+        }
     }
 
     private void OnAddClick()
@@ -67,15 +82,22 @@ else
         var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa vai trò {id}?");
         if (!confirm) return;
 
-        var result = await RoleService.DeleteRoleAsync(id);
-        if (result.IsSuccess)
+        try
         {
-            await LoadRoles();
-            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            var result = await RoleService.DeleteRoleAsync(id);
+            if (result.IsSuccess)
+            {
+                await LoadRoles();
+                await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            await JS.InvokeVoidAsync("alert", "Lỗi khi xóa: " + ex.Message);
         }
     }
 }

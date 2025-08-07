@@ -17,7 +17,8 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<StoreDto>?> GetStoresAsync(string? search = null, int page = 1, int pageSize = 50)
         {
-            var url = $"/api/Stores?page={page}&pageSize={pageSize}";
+            // Đường dẫn sử dụng dạng tương đối, không có dấu "/" đầu nếu đã cấu hình BaseAddress
+            var url = $"api/Stores?page={page}&pageSize={pageSize}";
             if (!string.IsNullOrWhiteSpace(search))
                 url += $"&search={search}";
             return await _http.GetFromJsonAsync<List<StoreDto>>(url);
@@ -25,12 +26,12 @@ namespace ShiftManagementFE.Services
 
         public async Task<StoreDto?> GetStoreAsync(int id)
         {
-            return await _http.GetFromJsonAsync<StoreDto>($"/api/Stores/{id}");
+            return await _http.GetFromJsonAsync<StoreDto>($"api/Stores/{id}");
         }
 
         public async Task<ApiResult<StoreDto>> CreateStoreAsync(StoreCreateDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Stores", dto);
+            var res = await _http.PostAsJsonAsync("api/Stores", dto);
             if (res.IsSuccessStatusCode)
             {
                 var data = await res.Content.ReadFromJsonAsync<StoreDto>();
@@ -42,7 +43,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> UpdateStoreAsync(int id, StoreUpdateDto dto)
         {
-            var res = await _http.PutAsJsonAsync($"/api/Stores/{id}", dto);
+            var res = await _http.PutAsJsonAsync($"api/Stores/{id}", dto);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -51,7 +52,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> DeleteStoreAsync(int id)
         {
-            var res = await _http.DeleteAsync($"/api/Stores/{id}");
+            var res = await _http.DeleteAsync($"api/Stores/{id}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();

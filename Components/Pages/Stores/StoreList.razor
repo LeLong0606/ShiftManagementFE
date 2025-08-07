@@ -9,11 +9,16 @@
 
 <button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
 
-@if (stores == null)
+@if (errorMsg != null)
+{
+    <div class="alert alert-danger">@errorMsg</div>
+}
+
+@if (stores == null && errorMsg == null)
 {
     <p>Đang tải...</p>
 }
-else
+else if (stores != null)
 {
     <table class="table table-bordered">
         <thead>
@@ -45,6 +50,7 @@ else
 
 @code {
     List<StoreDto>? stores;
+    string? errorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,7 +59,16 @@ else
 
     private async Task LoadStores()
     {
-        stores = await StoreService.GetStoresAsync();
+        try
+        {
+            errorMsg = null;
+            stores = await StoreService.GetStoresAsync();
+        }
+        catch (Exception ex)
+        {
+            stores = null;
+            errorMsg = "Không thể tải danh sách cửa hàng: " + ex.Message;
+        }
     }
 
     private void OnAddClick()
@@ -71,15 +86,22 @@ else
         var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa cửa hàng {id}?");
         if (!confirm) return;
 
-        var result = await StoreService.DeleteStoreAsync(id);
-        if (result.IsSuccess)
+        try
         {
-            await LoadStores();
-            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            var result = await StoreService.DeleteStoreAsync(id);
+            if (result.IsSuccess)
+            {
+                await LoadStores();
+                await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            await JS.InvokeVoidAsync("alert", "Lỗi khi xóa: " + ex.Message);
         }
     }
 }

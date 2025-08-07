@@ -17,7 +17,8 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<UserRoleDto>?> GetUserRolesAsync(int? userId = null, int? roleId = null)
         {
-            var url = "/api/UserRoles";
+            // Đường dẫn API phải là tương đối và không có dấu "/" ở đầu nếu đã set BaseAddress cho HttpClient
+            var url = "api/UserRoles";
             var parameters = new List<string>();
             if (userId.HasValue) parameters.Add($"userId={userId.Value}");
             if (roleId.HasValue) parameters.Add($"roleId={roleId.Value}");
@@ -27,7 +28,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult<UserRoleDto>> AddUserRoleAsync(UserRoleCreateDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/UserRoles", dto);
+            var res = await _http.PostAsJsonAsync("api/UserRoles", dto);
             if (res.IsSuccessStatusCode)
             {
                 var data = await res.Content.ReadFromJsonAsync<UserRoleDto>();
@@ -39,12 +40,12 @@ namespace ShiftManagementFE.Services
 
         public async Task<UserRoleDto?> GetUserRoleAsync(int userId, int roleId)
         {
-            return await _http.GetFromJsonAsync<UserRoleDto>($"/api/UserRoles/{userId}/{roleId}");
+            return await _http.GetFromJsonAsync<UserRoleDto>($"api/UserRoles/{userId}/{roleId}");
         }
 
         public async Task<ApiResult> DeleteUserRoleAsync(int userId, int roleId)
         {
-            var res = await _http.DeleteAsync($"/api/UserRoles/{userId}/{roleId}");
+            var res = await _http.DeleteAsync($"api/UserRoles/{userId}/{roleId}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -53,7 +54,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> UpdateUserRoleAsync(int userId, int roleId, UserRoleUpdateDto dto)
         {
-            var res = await _http.PutAsJsonAsync($"/api/UserRoles/{userId}/{roleId}", dto);
+            var res = await _http.PutAsJsonAsync($"api/UserRoles/{userId}/{roleId}", dto);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();

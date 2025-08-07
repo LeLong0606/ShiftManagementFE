@@ -17,17 +17,18 @@ namespace ShiftManagementFE.Services
 
         public async Task<List<DepartmentDto>?> GetDepartmentsAsync()
         {
-            return await _http.GetFromJsonAsync<List<DepartmentDto>>("/api/Departments");
+            // Đường dẫn API dạng tương đối, không có dấu "/" đầu nếu đã set BaseAddress
+            return await _http.GetFromJsonAsync<List<DepartmentDto>>("api/Departments");
         }
 
         public async Task<DepartmentDto?> GetDepartmentAsync(int id)
         {
-            return await _http.GetFromJsonAsync<DepartmentDto>($"/api/Departments/{id}");
+            return await _http.GetFromJsonAsync<DepartmentDto>($"api/Departments/{id}");
         }
 
         public async Task<ApiResult<DepartmentDto>> CreateDepartmentAsync(DepartmentDto dto)
         {
-            var res = await _http.PostAsJsonAsync("/api/Departments", dto);
+            var res = await _http.PostAsJsonAsync("api/Departments", dto);
             if (res.IsSuccessStatusCode)
             {
                 var data = await res.Content.ReadFromJsonAsync<DepartmentDto>();
@@ -39,7 +40,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> UpdateDepartmentAsync(int id, DepartmentDto dto)
         {
-            var res = await _http.PutAsJsonAsync($"/api/Departments/{id}", dto);
+            var res = await _http.PutAsJsonAsync($"api/Departments/{id}", dto);
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
@@ -48,7 +49,7 @@ namespace ShiftManagementFE.Services
 
         public async Task<ApiResult> DeleteDepartmentAsync(int id)
         {
-            var res = await _http.DeleteAsync($"/api/Departments/{id}");
+            var res = await _http.DeleteAsync($"api/Departments/{id}");
             if (res.IsSuccessStatusCode)
                 return ApiResult.Success();
             var err = await res.Content.ReadAsStringAsync();
