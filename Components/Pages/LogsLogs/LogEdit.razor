@@ -1,0 +1,53 @@
+﻿@page "/logs/add"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject LogService LogService
+@inject NavigationManager Navigation
+
+<h3>Tạo nhật ký (Log) mới</h3>
+
+<EditForm Model="Model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">UserID</label>
+        <InputNumber class="form-control" @bind-Value="Model.UserID" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Hành động</label>
+        <InputText class="form-control" @bind-Value="Model.Action" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Mô tả</label>
+        <InputTextArea class="form-control" @bind-Value="Model.Description" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Thời gian</label>
+        <InputDate class="form-control" @bind-Value="Model.Timestamp" />
+    </div>
+    <button class="btn btn-primary" type="submit">Lưu</button>
+    <button class="btn btn-secondary" type="button" @onclick="OnCancel">Hủy</button>
+</EditForm>
+
+@code {
+    LogCreateDto Model { get; set; } = new();
+
+    private async Task OnValidSubmit()
+    {
+        var result = await LogService.CreateLogAsync(Model);
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo("/logs");
+        }
+        else
+        {
+            // Có thể hiển thị lỗi nếu muốn
+        }
+    }
+
+    private void OnCancel()
+    {
+        Navigation.NavigateTo("/logs");
+    }
+}

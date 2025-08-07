@@ -1,0 +1,97 @@
+﻿@page "/schedules"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject ScheduleService ScheduleService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Lịch làm việc (Shift Schedules)</h3>
+
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
+
+@if (schedules == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!schedules.Any())
+{
+    <p>Không có dữ liệu.</p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nhân viên</th>
+                <th>Phòng ban</th>
+                <th>Cửa hàng</th>
+                <th>Ngày</th>
+                <th>Người tạo</th>
+                <th>Ngày tạo</th>
+                <th>Ngày cập nhật</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in schedules)
+            {
+                <tr>
+                    <td>@item.ScheduleID</td>
+                    <td>@item.EmployeeName</td>
+                    <td>@item.DepartmentName</td>
+                    <td>@item.StoreName</td>
+                    <td>@item.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@item.CreatedUser</td>
+                    <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>@item.UpdatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => OnEditClick(item.ScheduleID)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(item.ScheduleID)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<ShiftScheduleDto>? schedules;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        schedules = await ScheduleService.GetSchedulesAsync();
+    }
+
+    private void OnAddClick()
+    {
+        Navigation.NavigateTo("/schedules/add");
+    }
+
+    private void OnEditClick(int id)
+    {
+        Navigation.NavigateTo($"/schedules/edit/{id}");
+    }
+
+    private async Task OnDeleteClick(int id)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa lịch này?");
+        if (!confirm) return;
+
+        var result = await ScheduleService.DeleteScheduleAsync(id);
+        if (result.IsSuccess)
+        {
+            await LoadData();
+            await JS.InvokeVoidAsync("alert", "Đã xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+        }
+    }
+}

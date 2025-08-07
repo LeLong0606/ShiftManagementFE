@@ -1,0 +1,89 @@
+﻿@page "/userroles"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject UserRoleService UserRoleService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Danh sách phân quyền User-Role</h3>
+
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Gán quyền mới</button>
+
+@if (userRoles == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!userRoles.Any())
+{
+    <p>Không có dữ liệu.</p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>UserID</th>
+                <th>Username</th>
+                <th>RoleID</th>
+                <th>RoleName</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in userRoles)
+            {
+                <tr>
+                    <td>@item.UserID</td>
+                    <td>@item.Username</td>
+                    <td>@item.RoleID</td>
+                    <td>@item.RoleName</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => OnEditClick(item.UserID, item.RoleID)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(item.UserID, item.RoleID)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<UserRoleDto>? userRoles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        userRoles = await UserRoleService.GetUserRolesAsync();
+    }
+
+    private void OnAddClick()
+    {
+        Navigation.NavigateTo("/userroles/add");
+    }
+
+    private void OnEditClick(int userId, int roleId)
+    {
+        Navigation.NavigateTo($"/userroles/edit/{userId}/{roleId}");
+    }
+
+    private async Task OnDeleteClick(int userId, int roleId)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa quyền này?");
+        if (!confirm) return;
+
+        var result = await UserRoleService.DeleteUserRoleAsync(userId, roleId);
+        if (result.IsSuccess)
+        {
+            await LoadData();
+            await JS.InvokeVoidAsync("alert", "Đã xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+        }
+    }
+}

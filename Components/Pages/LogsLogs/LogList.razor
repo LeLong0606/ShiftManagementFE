@@ -1,0 +1,87 @@
+﻿@page "/logs"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject LogService LogService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Danh sách nhật ký (Logs)</h3>
+
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Tạo Log mới</button>
+
+@if (logs == null)
+{
+    <p>Đang tải...</p>
+}
+else if (!logs.Any())
+{
+    <p>Không có dữ liệu.</p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>UserID</th>
+                <th>Username</th>
+                <th>Hành động</th>
+                <th>Mô tả</th>
+                <th>Thời gian</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in logs)
+            {
+                <tr>
+                    <td>@log.LogID</td>
+                    <td>@log.UserID</td>
+                    <td>@log.Username</td>
+                    <td>@log.Action</td>
+                    <td>@log.Description</td>
+                    <td>@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(log.LogID)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<LogDto>? logs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        logs = await LogService.GetLogsAsync();
+    }
+
+    private void OnAddClick()
+    {
+        Navigation.NavigateTo("/logs/add");
+    }
+
+    private async Task OnDeleteClick(int id)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa log này?");
+        if (!confirm) return;
+
+        var result = await LogService.DeleteLogAsync(id);
+        if (result.IsSuccess)
+        {
+            await LoadData();
+            await JS.InvokeVoidAsync("alert", "Đã xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+        }
+    }
+}

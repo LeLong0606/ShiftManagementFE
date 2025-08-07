@@ -1,0 +1,79 @@
+﻿@page "/userroles/add"
+@page "/userroles/edit/{UserId:int}/{RoleId:int}"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject UserRoleService UserRoleService
+@inject NavigationManager Navigation
+
+<h3>@(IsEdit ? "Cập nhật phân quyền" : "Gán quyền cho User")</h3>
+
+<EditForm Model="Model" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">UserID</label>
+        <InputNumber class="form-control" @bind-Value="Model.UserID" disabled="@IsEdit" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">RoleID</label>
+        <InputNumber class="form-control" @bind-Value="roleIdValue" />
+    </div>
+    <button class="btn btn-primary" type="submit">Lưu</button>
+    <button class="btn btn-secondary" type="button" @onclick="OnCancel">Hủy</button>
+</EditForm>
+
+@code {
+    [Parameter] public int? UserId { get; set; }
+    [Parameter] public int? RoleId { get; set; }
+    public bool IsEdit => UserId != null && RoleId != null;
+
+    UserRoleCreateDto Model { get; set; } = new();
+    int roleIdValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            var dto = await UserRoleService.GetUserRoleAsync(UserId!.Value, RoleId!.Value);
+            if (dto != null)
+            {
+                Model.UserID = dto.UserID;
+                roleIdValue = dto.RoleID;
+            }
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        ApiResult result;
+        if (!IsEdit)
+        {
+            Model.RoleID = roleIdValue;
+            var res = await UserRoleService.AddUserRoleAsync(Model);
+            result = new ApiResult(res.IsSuccess, res.Error);
+        }
+        else
+        {
+            var updateDto = new UserRoleUpdateDto
+            {
+                NewRoleID = roleIdValue
+            };
+            result = await UserRoleService.UpdateUserRoleAsync(UserId!.Value, RoleId!.Value, updateDto);
+        }
+
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo("/userroles");
+        }
+        else
+        {
+            // Có thể hiển thị lỗi nếu muốn
+        }
+    }
+
+    private void OnCancel()
+    {
+        Navigation.NavigateTo("/userroles");
+    }
+}

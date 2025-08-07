@@ -1,0 +1,14 @@
+﻿@page "/auths"
+@using ShiftManagementFE.DTOs
+@inject NavigationManager Navigation
+
+<h3>Quản lý tài khoản - Auth</h3>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick='@(() => Navigation.NavigateTo("/auths/login"))'>Đăng nhập</button>
+    <button class="btn btn-success ms-2" @onclick='@(() => Navigation.NavigateTo("/auths/register"))'>Đăng ký tài khoản mới</button>
+</div>
+
+<p>
+    Chức năng quản lý tài khoản: Đăng nhập hoặc đăng ký tài khoản mới.
+</p>

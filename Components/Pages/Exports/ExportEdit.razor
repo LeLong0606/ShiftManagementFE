@@ -1,0 +1,95 @@
+﻿@page "/exports/edit"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject ExportService ExportService
+@inject IJSRuntime JS
+
+<h3>Tùy biến xuất dữ liệu chấm công</h3>
+
+<p>Ở đây bạn có thể chọn lại phòng ban, kỳ, và xuất lại file nếu cần.</p>
+
+<div class="row">
+    <div class="col-md-3">
+        <label>Phòng ban (DepartmentID):</label>
+        <InputNumber class="form-control" @bind-Value="DepartmentId" />
+    </div>
+    <div class="col-md-3">
+        <label>Kỳ (Period):</label>
+        <InputText class="form-control" @bind-Value="Period" />
+    </div>
+    <div class="col-md-3 mt-4">
+        <button class="btn btn-primary" @onclick="LoadData">Xem dữ liệu</button>
+    </div>
+</div>
+
+@if (data != null && data.Any())
+{
+    <div class="mt-3">
+        <button class="btn btn-success" @onclick="ExportExcel">Xuất Excel</button>
+        <button class="btn btn-danger ms-2" @onclick="ExportPdf">Xuất PDF</button>
+    </div>
+    <table class="table table-bordered table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Mã NV</th>
+                <th>Tên nhân viên</th>
+                <th>Tổng số công</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in data)
+            {
+                <tr>
+                    <td>@d.EmployeeID</td>
+                    <td>@d.Name</td>
+                    <td>@d.TotalWorkUnit</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (data != null)
+{
+    <p>Không có dữ liệu cho lựa chọn này.</p>
+}
+
+@code {
+    int DepartmentId { get; set; }
+    string Period { get; set; } = "";
+    List<AttendanceExportDto>? data;
+
+    private async Task LoadData()
+    {
+        if (DepartmentId <= 0 || string.IsNullOrWhiteSpace(Period))
+        {
+            await JS.InvokeVoidAsync("alert", "Vui lòng nhập đầy đủ phòng ban và kỳ.");
+            return;
+        }
+        data = await ExportService.GetAttendanceExportDataAsync(DepartmentId, Period);
+    }
+
+    private async Task ExportExcel()
+    {
+        if (data == null || !data.Any()) return;
+        var fileBytes = await ExportService.ExportAttendanceToExcelAsync(data!);
+        if (fileBytes != null)
+        {
+            await DownloadFile("attendance.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileBytes);
+        }
+    }
+
+    private async Task ExportPdf()
+    {
+        if (data == null || !data.Any()) return;
+        var fileBytes = await ExportService.ExportAttendanceToPdfAsync(data!);
+        if (fileBytes != null)
+        {
+            await DownloadFile("attendance.pdf", "application/pdf", fileBytes);
+        }
+    }
+
+    private async Task DownloadFile(string fileName, string contentType, byte[] fileData)
+    {
+        await JS.InvokeVoidAsync("blazorDownloadFile", fileName, contentType, Convert.ToBase64String(fileData));
+    }
+}

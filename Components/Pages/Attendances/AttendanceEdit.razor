@@ -1,0 +1,66 @@
+﻿@page "/attendances/my"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject AttendanceService AttendanceService
+@inject IJSRuntime JS
+
+<h3>Chi tiết chấm công cá nhân</h3>
+
+<div class="row">
+    <div class="col-md-3">
+        <label>UserID:</label>
+        <InputNumber class="form-control" @bind-Value="UserId" />
+    </div>
+    <div class="col-md-3">
+        <label>Kỳ (Period, ví dụ: 2025-08):</label>
+        <InputText class="form-control" @bind-Value="Period" />
+    </div>
+    <div class="col-md-3 mt-4">
+        <button class="btn btn-primary" @onclick="LoadData">Xem chi tiết</button>
+    </div>
+</div>
+
+@if (attendances == null)
+{
+    <p class="mt-3">Chưa có dữ liệu.</p>
+}
+else if (!attendances.Any())
+{
+    <p class="mt-3">Không có dữ liệu cho lựa chọn này.</p>
+}
+else
+{
+    <table class="table table-bordered table-striped mt-3">
+        <thead>
+            <tr>
+                <th>Ngày</th>
+                <th>Số công</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in attendances)
+            {
+                <tr>
+                    <td>@a.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@a.TotalWorkUnit</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    int UserId { get; set; }
+    string Period { get; set; } = "";
+    List<MyAttendanceDto>? attendances;
+
+    private async Task LoadData()
+    {
+        if (UserId <= 0 || string.IsNullOrWhiteSpace(Period))
+        {
+            await JS.InvokeVoidAsync("alert", "Vui lòng nhập đầy đủ UserID và kỳ.");
+            return;
+        }
+        attendances = await AttendanceService.GetMyAttendanceAsync(UserId, Period);
+    }
+}
