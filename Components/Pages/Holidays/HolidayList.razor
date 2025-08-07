@@ -1,0 +1,85 @@
+﻿@page "/holidays"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject HolidayService HolidayService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Danh sách ngày lễ</h3>
+
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
+
+@if (holidays == null)
+{
+    <p>Đang tải...</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Ngày</th>
+                <th>Mã ca mặc định</th>
+                <th>Tên ca mặc định</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var h in holidays)
+            {
+                <tr>
+                    <td>@h.HolidayID</td>
+                    <td>@h.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@h.DefaultShiftCodeID</td>
+                    <td>@h.DefaultShiftCode</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => OnEditClick(h.HolidayID)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(h.HolidayID)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<HolidayDto>? holidays;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHolidays();
+    }
+
+    private async Task LoadHolidays()
+    {
+        holidays = await HolidayService.GetHolidaysAsync();
+    }
+
+    private void OnAddClick()
+    {
+        Navigation.NavigateTo("/holidays/add");
+    }
+
+    private void OnEditClick(int id)
+    {
+        Navigation.NavigateTo($"/holidays/edit/{id}");
+    }
+
+    private async Task OnDeleteClick(int id)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa ngày lễ {id}?");
+        if (!confirm) return;
+
+        var result = await HolidayService.DeleteHolidayAsync(id);
+        if (result.IsSuccess)
+        {
+            await LoadHolidays();
+            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+        }
+    }
+}

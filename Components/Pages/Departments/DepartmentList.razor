@@ -1,0 +1,85 @@
+﻿@page "/departments"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject DepartmentService DepartmentService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Danh sách phòng ban</h3>
+
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
+
+@if (departments == null)
+{
+    <p>Đang tải...</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên phòng ban</th>
+                <th>Cửa hàng</th>
+                <th>Quản lý</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in departments)
+            {
+                <tr>
+                    <td>@d.DepartmentID</td>
+                    <td>@d.DepartmentName</td>
+                    <td>@d.StoreName</td>
+                    <td>@d.ManagerID</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => OnEditClick(d.DepartmentID)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(d.DepartmentID)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<DepartmentDto>? departments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartments();
+    }
+
+    private async Task LoadDepartments()
+    {
+        departments = await DepartmentService.GetDepartmentsAsync();
+    }
+
+    private void OnAddClick()
+    {
+        Navigation.NavigateTo("/departments/add");
+    }
+
+    private void OnEditClick(int id)
+    {
+        Navigation.NavigateTo($"/departments/edit/{id}");
+    }
+
+    private async Task OnDeleteClick(int id)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa phòng ban {id}?");
+        if (!confirm) return;
+
+        var result = await DepartmentService.DeleteDepartmentAsync(id);
+        if (result.IsSuccess)
+        {
+            await LoadDepartments();
+            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+        }
+    }
+}

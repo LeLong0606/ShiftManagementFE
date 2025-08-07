@@ -1,0 +1,85 @@
+﻿@page "/stores"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject StoreService StoreService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Danh sách cửa hàng</h3>
+
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
+
+@if (stores == null)
+{
+    <p>Đang tải...</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên cửa hàng</th>
+                <th>Địa chỉ</th>
+                <th>Điện thoại</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var store in stores)
+            {
+                <tr>
+                    <td>@store.StoreID</td>
+                    <td>@store.StoreName</td>
+                    <td>@store.Address</td>
+                    <td>@store.Phone</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => OnEditClick(store.StoreID)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(store.StoreID)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<StoreDto>? stores;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStores();
+    }
+
+    private async Task LoadStores()
+    {
+        stores = await StoreService.GetStoresAsync();
+    }
+
+    private void OnAddClick()
+    {
+        Navigation.NavigateTo("/stores/add");
+    }
+
+    private void OnEditClick(int id)
+    {
+        Navigation.NavigateTo($"/stores/edit/{id}");
+    }
+
+    private async Task OnDeleteClick(int id)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa cửa hàng {id}?");
+        if (!confirm) return;
+
+        var result = await StoreService.DeleteStoreAsync(id);
+        if (result.IsSuccess)
+        {
+            await LoadStores();
+            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+        }
+    }
+}

@@ -1,0 +1,107 @@
+﻿@page "/stores/add"
+@page "/stores/edit/{Id:int}"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject StoreService StoreService
+@inject NavigationManager Navigation
+
+<h3>@(IsEdit ? "Cập nhật cửa hàng" : "Thêm cửa hàng")</h3>
+
+@if (IsEdit)
+{
+    <EditForm Model="UpdateDto" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Tên cửa hàng</label>
+            <InputText class="form-control" @bind-Value="UpdateDto.StoreName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <InputText class="form-control" @bind-Value="UpdateDto.Address" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Điện thoại</label>
+            <InputText class="form-control" @bind-Value="UpdateDto.Phone" />
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+        <button class="btn btn-secondary" type="button" @onclick="OnCancel">Hủy</button>
+    </EditForm>
+}
+else
+{
+    <EditForm Model="CreateDto" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Tên cửa hàng</label>
+            <InputText class="form-control" @bind-Value="CreateDto.StoreName" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <InputText class="form-control" @bind-Value="CreateDto.Address" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Điện thoại</label>
+            <InputText class="form-control" @bind-Value="CreateDto.Phone" />
+        </div>
+        <button class="btn btn-primary" type="submit">Lưu</button>
+        <button class="btn btn-secondary" type="button" @onclick="OnCancel">Hủy</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    public bool IsEdit => Id != null;
+
+    public StoreCreateDto CreateDto { get; set; } = new();
+    public StoreUpdateDto UpdateDto { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            var d = await StoreService.GetStoreAsync(Id ?? 0);
+            if (d != null)
+            {
+                UpdateDto.StoreName = d.StoreName;
+                UpdateDto.Address = d.Address;
+                UpdateDto.Phone = d.Phone;
+            }
+        }
+        else
+        {
+            CreateDto = new StoreCreateDto();
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        ApiResult result;
+        if (!IsEdit)
+        {
+            var res = await StoreService.CreateStoreAsync(CreateDto);
+            result = new ApiResult(res.IsSuccess, res.Error);
+        }
+        else
+        {
+            result = await StoreService.UpdateStoreAsync(Id ?? 0, UpdateDto);
+        }
+
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo("/stores");
+        }
+        else
+        {
+            // TODO: Hiển thị lỗi nếu cần
+        }
+    }
+
+    private void OnCancel()
+    {
+        Navigation.NavigateTo("/stores");
+    }
+}

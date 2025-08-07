@@ -1,0 +1,81 @@
+﻿@page "/roles"
+@using ShiftManagementFE.DTOs
+@using ShiftManagementFE.Services
+@inject RoleService RoleService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Danh sách vai trò</h3>
+
+<button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
+
+@if (roles == null)
+{
+    <p>Đang tải...</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên vai trò</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var role in roles)
+            {
+                <tr>
+                    <td>@role.RoleID</td>
+                    <td>@role.RoleName</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" @onclick="() => OnEditClick(role.RoleID)">Sửa</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteClick(role.RoleID)">Xóa</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    List<RoleDto>? roles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRoles();
+    }
+
+    private async Task LoadRoles()
+    {
+        roles = await RoleService.GetRolesAsync();
+    }
+
+    private void OnAddClick()
+    {
+        Navigation.NavigateTo("/roles/add");
+    }
+
+    private void OnEditClick(int id)
+    {
+        Navigation.NavigateTo($"/roles/edit/{id}");
+    }
+
+    private async Task OnDeleteClick(int id)
+    {
+        var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa vai trò {id}?");
+        if (!confirm) return;
+
+        var result = await RoleService.DeleteRoleAsync(id);
+        if (result.IsSuccess)
+        {
+            await LoadRoles();
+            await JS.InvokeVoidAsync("alert", "Xóa thành công!");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+        }
+    }
+}

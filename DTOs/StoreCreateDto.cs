@@ -6,7 +6,7 @@ namespace ShiftManagementFE.DTOs
     public class StoreCreateDto
     {
         [Required, MaxLength(100)]
-        public string StoreName { get; set; } = default!;
+        public string StoreName { get; set; } = string.Empty;
 
         [MaxLength(200)]
         public string? Address { get; set; }
