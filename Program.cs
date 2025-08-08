@@ -16,27 +16,51 @@ builder.Services.AddHttpClient("ApiClient", client =>
 
 // Register application services for DI, inject named HttpClient
 builder.Services.AddScoped<UserService>(sp =>
-    new UserService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new UserService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<AuthService>(sp =>
-    new AuthService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new AuthService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<DepartmentService>(sp =>
-    new DepartmentService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new DepartmentService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<HolidayService>(sp =>
-    new HolidayService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new HolidayService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<StoreService>(sp =>
-    new StoreService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new StoreService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<RoleService>(sp =>
-    new RoleService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new RoleService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<LogService>(sp =>
-    new LogService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new LogService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<ScheduleService>(sp =>
-    new ScheduleService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new ScheduleService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<AttendanceService>(sp =>
-    new AttendanceService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new AttendanceService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<ExportService>(sp =>
-    new ExportService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new ExportService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
 builder.Services.AddScoped<UserRoleService>(sp =>
-    new UserRoleService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
+    new UserRoleService(
+        sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient"),
+        sp.GetRequiredService<ErrorService>()));
+builder.Services.AddScoped<ErrorService>(sp =>
+    new ErrorService(sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient")));
 
 var app = builder.Build();
 

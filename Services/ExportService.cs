@@ -9,33 +9,49 @@ namespace ShiftManagementFE.Services
     public class ExportService
     {
         private readonly HttpClient _http;
+        private readonly ErrorService _errorService;
 
-        public ExportService(HttpClient http)
+        public ExportService(HttpClient http, ErrorService errorService)
         {
             _http = http;
+            _errorService = errorService;
         }
 
         public async Task<List<AttendanceExportDto>?> GetAttendanceExportDataAsync(int departmentId, string period)
         {
-            // Đường dẫn API là tương đối, không có dấu "/" đầu
             var url = $"api/Export/attendance?departmentId={departmentId}&period={period}";
-            return await _http.GetFromJsonAsync<List<AttendanceExportDto>>(url);
+            return await _errorService.TryCatchHttpAsync(
+                async () => await _http.GetFromJsonAsync<List<AttendanceExportDto>>(url),
+                userMessage: "Không thể lấy dữ liệu xuất chấm công!"
+            );
         }
 
         public async Task<byte[]?> ExportAttendanceToExcelAsync(List<AttendanceExportDto> dtoData)
         {
-            var res = await _http.PostAsJsonAsync("api/Export/attendance/excel", dtoData);
-            if (res.IsSuccessStatusCode)
-                return await res.Content.ReadAsByteArrayAsync();
-            return null;
+            return await _errorService.TryCatchHttpAsync(
+                async () =>
+                {
+                    var res = await _http.PostAsJsonAsync("api/Export/attendance/excel", dtoData);
+                    if (res.IsSuccessStatusCode)
+                        return await res.Content.ReadAsByteArrayAsync();
+                    return null;
+                },
+                userMessage: "Xuất Excel thất bại!"
+            );
         }
 
         public async Task<byte[]?> ExportAttendanceToPdfAsync(List<AttendanceExportDto> dtoData)
         {
-            var res = await _http.PostAsJsonAsync("api/Export/attendance/pdf", dtoData);
-            if (res.IsSuccessStatusCode)
-                return await res.Content.ReadAsByteArrayAsync();
-            return null;
+            return await _errorService.TryCatchHttpAsync(
+                async () =>
+                {
+                    var res = await _http.PostAsJsonAsync("api/Export/attendance/pdf", dtoData);
+                    if (res.IsSuccessStatusCode)
+                        return await res.Content.ReadAsByteArrayAsync();
+                    return null;
+                },
+                userMessage: "Xuất PDF thất bại!"
+            );
         }
     }
 }
