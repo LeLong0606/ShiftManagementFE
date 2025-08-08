@@ -9,15 +9,20 @@
 
 <button class="btn btn-primary mb-2" @onclick="OnAddClick">Thêm mới</button>
 
-@if (schedules == null)
+@if (!string.IsNullOrEmpty(ErrorMsg))
+{
+    <div class="alert alert-danger">@ErrorMsg</div>
+}
+
+@if (schedules == null && string.IsNullOrEmpty(ErrorMsg))
 {
     <p>Đang tải...</p>
 }
-else if (!schedules.Any())
+else if (schedules != null && !schedules.Any())
 {
     <p>Không có dữ liệu.</p>
 }
-else
+else if (schedules != null)
 {
     <table class="table table-bordered table-striped">
         <thead>
@@ -57,6 +62,7 @@ else
 
 @code {
     List<ShiftScheduleDto>? schedules;
+    string? ErrorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,7 +71,16 @@ else
 
     private async Task LoadData()
     {
-        schedules = await ScheduleService.GetSchedulesAsync();
+        try
+        {
+            ErrorMsg = null;
+            schedules = await ScheduleService.GetSchedulesAsync();
+        }
+        catch
+        {
+            schedules = null;
+            ErrorMsg = "Không thể tải dữ liệu lịch làm việc. Vui lòng thử lại sau.";
+        }
     }
 
     private void OnAddClick()
@@ -83,15 +98,22 @@ else
         var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa lịch này?");
         if (!confirm) return;
 
-        var result = await ScheduleService.DeleteScheduleAsync(id);
-        if (result.IsSuccess)
+        try
         {
-            await LoadData();
-            await JS.InvokeVoidAsync("alert", "Đã xóa thành công!");
+            var result = await ScheduleService.DeleteScheduleAsync(id);
+            if (result.IsSuccess)
+            {
+                await LoadData();
+                await JS.InvokeVoidAsync("alert", "Đã xóa thành công!");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "Có lỗi xảy ra khi xóa. Vui lòng thử lại!");
+            }
         }
-        else
+        catch
         {
-            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            await JS.InvokeVoidAsync("alert", "Có lỗi hệ thống. Vui lòng thử lại sau!");
         }
     }
 }

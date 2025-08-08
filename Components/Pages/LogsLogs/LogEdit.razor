@@ -6,6 +6,11 @@
 
 <h3>Tạo nhật ký (Log) mới</h3>
 
+@if (!string.IsNullOrEmpty(ErrorMsg))
+{
+    <div class="alert alert-danger">@ErrorMsg</div>
+}
+
 <EditForm Model="Model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -32,17 +37,26 @@
 
 @code {
     LogCreateDto Model { get; set; } = new();
+    string? ErrorMsg;
 
     private async Task OnValidSubmit()
     {
-        var result = await LogService.CreateLogAsync(Model);
-        if (result.IsSuccess)
+        ErrorMsg = null;
+        try
         {
-            Navigation.NavigateTo("/logs");
+            var result = await LogService.CreateLogAsync(Model);
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/logs");
+            }
+            else
+            {
+                ErrorMsg = "Có lỗi xảy ra khi tạo log. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.";
+            }
         }
-        else
+        catch
         {
-            // Có thể hiển thị lỗi nếu muốn
+            ErrorMsg = "Có lỗi hệ thống. Vui lòng thử lại sau!";
         }
     }
 

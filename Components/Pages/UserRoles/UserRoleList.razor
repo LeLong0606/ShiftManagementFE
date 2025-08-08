@@ -9,15 +9,20 @@
 
 <button class="btn btn-primary mb-2" @onclick="OnAddClick">Gán quyền mới</button>
 
-@if (userRoles == null)
+@if (!string.IsNullOrEmpty(ErrorMsg))
+{
+    <div class="alert alert-danger">@ErrorMsg</div>
+}
+
+@if (userRoles == null && string.IsNullOrEmpty(ErrorMsg))
 {
     <p>Đang tải...</p>
 }
-else if (!userRoles.Any())
+else if (userRoles != null && !userRoles.Any())
 {
     <p>Không có dữ liệu.</p>
 }
-else
+else if (userRoles != null)
 {
     <table class="table table-bordered table-striped">
         <thead>
@@ -49,6 +54,7 @@ else
 
 @code {
     List<UserRoleDto>? userRoles;
+    string? ErrorMsg;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,7 +63,16 @@ else
 
     private async Task LoadData()
     {
-        userRoles = await UserRoleService.GetUserRolesAsync();
+        try
+        {
+            ErrorMsg = null;
+            userRoles = await UserRoleService.GetUserRolesAsync();
+        }
+        catch
+        {
+            userRoles = null;
+            ErrorMsg = "Không thể tải dữ liệu phân quyền. Vui lòng thử lại sau.";
+        }
     }
 
     private void OnAddClick()
@@ -75,15 +90,23 @@ else
         var confirm = await JS.InvokeAsync<bool>("confirm", $"Bạn có chắc muốn xóa quyền này?");
         if (!confirm) return;
 
-        var result = await UserRoleService.DeleteUserRoleAsync(userId, roleId);
-        if (result.IsSuccess)
+        try
         {
-            await LoadData();
-            await JS.InvokeVoidAsync("alert", "Đã xóa thành công!");
+            var result = await UserRoleService.DeleteUserRoleAsync(userId, roleId);
+            if (result.IsSuccess)
+            {
+                await LoadData();
+                await JS.InvokeVoidAsync("alert", "Đã xóa thành công!");
+            }
+            else
+            {
+                // Không show lỗi mã nguồn chi tiết
+                await JS.InvokeVoidAsync("alert", "Có lỗi xảy ra khi xóa. Vui lòng thử lại!");
+            }
         }
-        else
+        catch
         {
-            await JS.InvokeVoidAsync("alert", "Lỗi: " + result.Error);
+            await JS.InvokeVoidAsync("alert", "Có lỗi hệ thống. Vui lòng thử lại sau!");
         }
     }
 }

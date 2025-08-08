@@ -7,6 +7,11 @@
 
 <h3>@(IsEdit ? "Cập nhật phân quyền" : "Gán quyền cho User")</h3>
 
+@if (!string.IsNullOrEmpty(ErrorMsg))
+{
+    <div class="alert alert-danger">@ErrorMsg</div>
+}
+
 <EditForm Model="Model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -30,45 +35,65 @@
 
     UserRoleCreateDto Model { get; set; } = new();
     int roleIdValue;
+    string? ErrorMsg;
 
     protected override async Task OnInitializedAsync()
     {
-        if (IsEdit)
+        try
         {
-            var dto = await UserRoleService.GetUserRoleAsync(UserId!.Value, RoleId!.Value);
-            if (dto != null)
+            if (IsEdit)
             {
-                Model.UserID = dto.UserID;
-                roleIdValue = dto.RoleID;
+                var dto = await UserRoleService.GetUserRoleAsync(UserId!.Value, RoleId!.Value);
+                if (dto != null)
+                {
+                    Model.UserID = dto.UserID;
+                    roleIdValue = dto.RoleID;
+                }
+                else
+                {
+                    ErrorMsg = "Không tìm thấy thông tin phân quyền.";
+                }
             }
+        }
+        catch
+        {
+            ErrorMsg = "Có lỗi khi tải dữ liệu. Vui lòng thử lại sau.";
         }
     }
 
     private async Task OnValidSubmit()
     {
+        ErrorMsg = null;
         ApiResult result;
-        if (!IsEdit)
+        try
         {
-            Model.RoleID = roleIdValue;
-            var res = await UserRoleService.AddUserRoleAsync(Model);
-            result = new ApiResult(res.IsSuccess, res.Error);
-        }
-        else
-        {
-            var updateDto = new UserRoleUpdateDto
+            if (!IsEdit)
             {
-                NewRoleID = roleIdValue
-            };
-            result = await UserRoleService.UpdateUserRoleAsync(UserId!.Value, RoleId!.Value, updateDto);
-        }
+                Model.RoleID = roleIdValue;
+                var res = await UserRoleService.AddUserRoleAsync(Model);
+                result = new ApiResult(res.IsSuccess, res.Error);
+            }
+            else
+            {
+                var updateDto = new UserRoleUpdateDto
+                {
+                    NewRoleID = roleIdValue
+                };
+                result = await UserRoleService.UpdateUserRoleAsync(UserId!.Value, RoleId!.Value, updateDto);
+            }
 
-        if (result.IsSuccess)
-        {
-            Navigation.NavigateTo("/userroles");
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/userroles");
+            }
+            else
+            {
+                ErrorMsg = "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.";
+            }
         }
-        else
+        catch
         {
-            // Có thể hiển thị lỗi nếu muốn
+            ErrorMsg = "Có lỗi hệ thống. Vui lòng thử lại sau!";
         }
     }
 

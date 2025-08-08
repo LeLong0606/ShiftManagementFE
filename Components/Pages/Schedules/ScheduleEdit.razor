@@ -7,9 +7,9 @@
 
 <h3>@(IsEdit ? "Cập nhật lịch làm việc" : "Thêm lịch làm việc")</h3>
 
-@if (!string.IsNullOrEmpty(errorMsg))
+@if (!string.IsNullOrEmpty(ErrorMsg))
 {
-    <div class="alert alert-danger">@errorMsg</div>
+    <div class="alert alert-danger">@ErrorMsg</div>
 }
 
 <EditForm Model="Model" OnValidSubmit="OnValidSubmit">
@@ -42,80 +42,95 @@
     public bool IsEdit => Id != null;
 
     ShiftScheduleCreateDto Model { get; set; } = new();
-    string? errorMsg;
+    string? ErrorMsg;
 
     protected override async Task OnInitializedAsync()
     {
-        if (IsEdit)
+        try
         {
-            // Lấy chi tiết lịch làm việc để sửa (nếu cần lấy bằng DTO khác thì sửa lại)
-            var all = await ScheduleService.GetSchedulesAsync();
-            var editItem = all?.FirstOrDefault(x => x.ScheduleID == Id);
-            if (editItem != null)
+            if (IsEdit)
+            {
+                // Lấy chi tiết lịch làm việc để sửa (nếu cần lấy bằng DTO khác thì sửa lại)
+                var all = await ScheduleService.GetSchedulesAsync();
+                var editItem = all?.FirstOrDefault(x => x.ScheduleID == Id);
+                if (editItem != null)
+                {
+                    Model = new ShiftScheduleCreateDto
+                    {
+                        EmployeeID = editItem.EmployeeID,
+                        DepartmentID = editItem.DepartmentID,
+                        StoreID = editItem.StoreID,
+                        Date = editItem.Date,
+                        Details = editItem.Details?.Select(d => new ShiftScheduleDetailCreateDto
+                        {
+                            ShiftCodeID = d.ShiftCodeID,
+                            ShiftType = d.ShiftType,
+                            WorkUnit = d.WorkUnit
+                        }).ToList() ?? new List<ShiftScheduleDetailCreateDto>()
+                    };
+                }
+                else
+                {
+                    ErrorMsg = "Không tìm thấy lịch làm việc!";
+                }
+            }
+            else
             {
                 Model = new ShiftScheduleCreateDto
                 {
-                    EmployeeID = editItem.EmployeeID,
-                    DepartmentID = editItem.DepartmentID,
-                    StoreID = editItem.StoreID,
-                    Date = editItem.Date,
-                    Details = editItem.Details?.Select(d => new ShiftScheduleDetailCreateDto
+                    Details = new List<ShiftScheduleDetailCreateDto>()
+                };
+            }
+        }
+        catch
+        {
+            ErrorMsg = "Có lỗi khi tải dữ liệu. Vui lòng thử lại sau!";
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        ErrorMsg = null;
+        ApiResult result;
+        try
+        {
+            if (!IsEdit)
+            {
+                // Giả sử createdBy là 1, bạn có thể lấy từ context đăng nhập
+                var res = await ScheduleService.CreateScheduleAsync(Model, createdById: 1);
+                result = new ApiResult(res.IsSuccess, res.Error);
+            }
+            else
+            {
+                var updateDto = new ShiftScheduleUpdateDto
+                {
+                    ScheduleID = Id ?? 0,
+                    EmployeeID = Model.EmployeeID,
+                    DepartmentID = Model.DepartmentID,
+                    StoreID = Model.StoreID,
+                    Date = Model.Date,
+                    Details = Model.Details?.Select(d => new ShiftScheduleDetailCreateDto
                     {
                         ShiftCodeID = d.ShiftCodeID,
                         ShiftType = d.ShiftType,
                         WorkUnit = d.WorkUnit
                     }).ToList() ?? new List<ShiftScheduleDetailCreateDto>()
                 };
+                result = await ScheduleService.UpdateScheduleAsync(Id!.Value, updateDto);
+            }
+
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo("/schedules");
             }
             else
             {
-                errorMsg = "Không tìm thấy lịch làm việc!";
+                ErrorMsg = "Có lỗi xảy ra. Vui lòng kiểm tra lại thông tin hoặc thử lại sau.";
             }
         }
-        else
+        catch
         {
-            Model = new ShiftScheduleCreateDto
-            {
-                Details = new List<ShiftScheduleDetailCreateDto>()
-            };
-        }
-    }
-
-    private async Task OnValidSubmit()
-    {
-        ApiResult result;
-        if (!IsEdit)
-        {
-            // Giả sử createdBy là 1, bạn có thể lấy từ context đăng nhập
-            var res = await ScheduleService.CreateScheduleAsync(Model, createdById: 1);
-            result = new ApiResult(res.IsSuccess, res.Error);
-        }
-        else
-        {
-            var updateDto = new ShiftScheduleUpdateDto
-            {
-                ScheduleID = Id ?? 0,
-                EmployeeID = Model.EmployeeID,
-                DepartmentID = Model.DepartmentID,
-                StoreID = Model.StoreID,
-                Date = Model.Date,
-                Details = Model.Details?.Select(d => new ShiftScheduleDetailCreateDto
-                {
-                    ShiftCodeID = d.ShiftCodeID,
-                    ShiftType = d.ShiftType,
-                    WorkUnit = d.WorkUnit
-                }).ToList() ?? new List<ShiftScheduleDetailCreateDto>()
-            };
-            result = await ScheduleService.UpdateScheduleAsync(Id!.Value, updateDto);
-        }
-
-        if (result.IsSuccess)
-        {
-            Navigation.NavigateTo("/schedules");
-        }
-        else
-        {
-            errorMsg = "Lỗi: " + result.Error;
+            ErrorMsg = "Có lỗi hệ thống. Vui lòng thử lại sau!";
         }
     }
 
